@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ku">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BELOO MVP TERMINAL</title>
+    <style>
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: #000; overflow: hidden; display: flex; flex-direction: column; font-family: monospace; color: #0f0; }
+        #matrix-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        #terminal { position: relative; z-index: 2; flex: 1; padding: 20px; font-size: 1.1rem; text-shadow: 0 0 5px #0f0; display: flex; flex-direction: column; justify-content: flex-end; }
+        .output { overflow-y: auto; max-height: 80%; pointer-events: auto; }
+        .line { margin: 0; padding: 2px 0; }
+        .line.user { color: #88ff88; font-weight: bold; }
+        .line.system { color: #ff0000; font-weight: bold; text-shadow: 0 0 10px #ff0000; text-align: center; font-size: 1.2rem; }
+        .line.success { color: #ffff88; }
+        .prompt-container { display: flex; align-items: center; }
+        #input-command { background: none; border: none; color: #0f0; font-family: monospace; font-size: 1.1rem; width: 100%; outline: none; }
+    </style>
+</head>
+<body>
+    <canvas id="matrix-canvas"></canvas>
+    <div id="terminal">
+        <div class="output" id="terminal-output">
+            <p class="line system">WELCOME TO THE MVP_BELOO TERMINAL [SYSTEM: ONLINE]</p>
+            <p class="line">Type 'help' to see available commands.</p>
+        </div>
+        <div class="prompt-container">
+            <span style="color:#88ff88; font-weight:bold; margin-right:5px;">[mvp_beloo@terminal ~]$</span>
+            <input type="text" id="input-command" autofocus>
+        </div>
+    </div>
+
+    <script>
+        // Audio Setup
+        const typingSound = new Audio('https://www.soundjay.com/communication/typewriter-key-1.mp3');
+        const accessGrantedSound = new Audio('https://www.soundjay.com/buttons/button-09.mp3');
+        const deniedSound = new Audio('https://www.soundjay.com/buttons/button-10.mp3');
+
+        // Matrix Background
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const words = "BELOO MVP 1010 ";
+        const fontSize = 16;
+        const columns = canvas.width / fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+        function draw() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0f0'; ctx.font = fontSize + 'px monospace';
+            drops.forEach((y, i) => {
+                const text = words.charAt(Math.floor(Math.random() * words.length));
+                ctx.fillText(text, i * fontSize, y * fontSize);
+                if (y * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            });
+        }
+        setInterval(draw, 35);
+
+        // Terminal Logic
+        const inputField = document.getElementById('input-command');
+        const terminalOutput = document.getElementById('terminal-output');
+        const linkCommands = {
+            'instagram': "https://www.instagram.com/i_eminki.01",
+            'snapchat': "https://snapchat.com/t/FIuxhe8f",
+            'tiktok': "https://www.tiktok.com/@1st.belo"
+        };
+
+        inputField.addEventListener('keydown', function(e) {
+            typingSound.currentTime = 0; typingSound.play();
+            if (e.key === 'Enter') {
+                const command = inputField.value.trim().toLowerCase();
+                inputField.value = '';
+                printToTerminal(`[mvp_beloo@terminal ~]$ ${command}`, 'user');
+                processCommand(command);
+            }
+        });
+
+        function printToTerminal(text, type = '') {
+            const p = document.createElement('p'); p.className = `line ${type}`;
+            p.innerText = text; terminalOutput.appendChild(p);
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        }
+
+        function processCommand(command) {
+            if (command === 'help') {
+                printToTerminal("Commands: help, instagram, snapchat, tiktok, underestimate, clear");
+            } else if (linkCommands[command]) {
+                accessGrantedSound.play();
+                printToTerminal(`Accessing ${command} link...`, 'success');
+                setTimeout(() => { window.open(linkCommands[command], '_blank'); }, 600);
+            } else if (command === 'underestimate') {
+                accessGrantedSound.play();
+                printToTerminal("Underestimate me. That'll be fun.", 'system');
+            } else if (command === 'clear') {
+                terminalOutput.innerHTML = '';
+            } else {
+                deniedSound.play();
+                printToTerminal(`Command not found: ${command}`, 'system');
+            }
+        }
+    </script>
+</body>
+</html>
