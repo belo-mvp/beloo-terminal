@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ku">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MVP-BELO | SUPREME</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        
+        :root { --main: #00ff41; --gold: #ffd700; --bg: #050505; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); overflow: hidden; font-family: 'Share Tech Mono', monospace; color: var(--main); }
+
+        /* Scanning Line Effect */
+        body::before { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,255,65,0.02) 50%, rgba(0,0,0,0) 100%); background-size: 100% 8px; z-index: 100; pointer-events: none; animation: scan 6s linear infinite; }
+        @keyframes scan { from { background-position: 0 0; } to { background-position: 0 100%; } }
+
+        #matrix-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; opacity: 0.35; filter: contrast(1.2) blur(0.4px); }
+        
+        #terminal { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; padding: 30px; box-sizing: border-box; background: radial-gradient(circle, rgba(0,20,0,0.05) 0%, #000 100%); }
+
+        .header-section { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(0,255,65,0.2); padding-bottom: 15px; margin-bottom: 25px; }
+        .clock-style { font-size: 1.4rem; font-weight: bold; color: var(--gold); text-shadow: 0 0 15px var(--gold); letter-spacing: 2px; }
+        
+        .output { flex: 1; overflow-y: auto; scrollbar-width: none; }
+        .output::-webkit-scrollbar { display: none; }
+
+        .line { margin-bottom: 15px; font-size: 1.2rem; line-height: 1.6; text-shadow: 0 0 8px var(--main); }
+        .tag { color: #fff; background: rgba(0,255,65,0.1); padding: 3px 10px; border-radius: 2px; margin-right: 10px; border-left: 3px solid var(--gold); }
+
+        .underestimate-box { border: 2px solid var(--gold); padding: 30px; margin: 30px 0; font-size: 1.8rem; text-align: center; color: #fff; background: rgba(255, 215, 0, 0.05); box-shadow: 0 0 40px rgba(255, 215, 0, 0.15); font-weight: 900; text-transform: uppercase; letter-spacing: 4px; animation: glow-pulse 2s infinite alternate; }
+        @keyframes glow-pulse { from { box-shadow: 0 0 10px rgba(255, 215, 0, 0.1); } to { box-shadow: 0 0 40px rgba(255, 215, 0, 0.3); } }
+
+        .input-area { display: flex; align-items: center; padding-top: 25px; border-top: 1px solid rgba(0,255,65,0.2); }
+        #input-cmd { background: none; border: none; color: #fff; font-family: inherit; font-size: 1.3rem; width: 100%; outline: none; caret-color: var(--gold); }
+    </style>
+</head>
+<body>
+    <canvas id="matrix-canvas"></canvas>
+    <div id="terminal">
+        <div class="header-section">
+            <div style="font-size: 1.6rem; font-weight: 900; letter-spacing: 3px;">MVP_BELO // SYSTEM</div>
+            <div id="clock" class="clock-style">00:00:00</div>
+        </div>
+        
+        <div class="output" id="terminal-out">
+            <p class="line">> PROTOCOL STATUS: SUPREME ACCESS</p>
+            <p class="line">> ENCRYPTION: ACTIVE (AES-256)</p>
+            <p class="line">> TYPE 'HELP' TO START</p>
+        </div>
+
+        <div class="input-area">
+            <span class="tag">ROOT@MVP_BELO:~#</span>
+            <input type="text" id="input-cmd" autofocus autocomplete="off">
+        </div>
+    </div>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0') + ":" + now.getSeconds().toString().padStart(2, '0');
+        }
+        setInterval(updateClock, 1000); updateClock();
+
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        
+        const matrixName = "MVP BELO ";
+        const fontSize = 20;
+        const columns = Math.floor(canvas.width / fontSize);
+        const drops = Array(columns).fill(1);
+
+        function draw() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            drops.forEach((y, i) => {
+                const text = matrixName.charAt(Math.floor(Math.random() * matrixName.length));
+                // Randomly color some characters gold for prestige
+                ctx.fillStyle = Math.random() > 0.9 ? '#ffd700' : '#0f0';
+                ctx.font = (Math.random() > 0.9 ? 'bold ' : '') + fontSize + 'px monospace';
+                
+                ctx.fillText(text, i * fontSize, y * fontSize);
+                if (y * fontSize > canvas.height && Math.random() > 0.98) drops[i] = 0;
+                drops[i]++;
+            });
+        }
+        setInterval(draw, 50);
+
+        const input = document.getElementById('input-cmd');
+        const out = document.getElementById('terminal-out');
+        const links = { 'instagram': "https://www.instagram.com/i_eminki.01", 'snapchat': "https://snapchat.com/t/FIuxhe8f", 'tiktok': "https://www.tiktok.com/@1st.belo" };
+
+        document.addEventListener('click', () => input.focus());
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const cmd = input.value.trim().toLowerCase();
+                input.value = '';
+                if (!cmd) return;
+
+                printLine(`<span class="tag">ROOT@MVP_BELO:~#</span> ${cmd}`);
+
+                if (cmd === 'help') {
+                    printLine("> COMMANDS: help, instagram, snapchat, tiktok, underestimate, clear");
+                } else if (links[cmd]) {
+                    printLine(`> ESTABLISHING SECURE TUNNEL TO ${cmd.toUpperCase()}...`);
+                    setTimeout(() => window.open(links[cmd], '_blank'), 600);
+                } else if (cmd === 'underestimate') {
+                    printLine("Underestimate me. That'll be fun.", "underestimate-box");
+                } else if (cmd === 'clear') {
+                    out.innerHTML = '';
+                } else {
+                    printLine(`> ERROR: COMMAND '${cmd}' NOT FOUND IN KERNEL.`);
+                }
+                out.scrollTop = out.scrollHeight;
+            }
+        });
+
+        function printLine(text, cls = '') {
+            const d = document.createElement('div'); d.className = 'line ' + cls;
+            d.innerHTML = text; out.appendChild(d);
+        }
+    </script>
+</body>
+</html>
