@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ku">
+<head>
+    <meta charset="UTF-8">
+    <title>BELO | ROOT TERMINAL</title>
+    <style>
+        body { background: #000; color: #00ff41; font-family: 'Courier New', monospace; margin: 0; overflow: hidden; }
+        #terminal { padding: 20px; height: 90vh; overflow-y: auto; }
+        .input-line { display: flex; background: #000; padding: 10px; border-top: 1px solid #ff0000; position: fixed; bottom: 0; width: 100%; }
+        input { background: transparent; border: none; color: #fff; outline: none; width: 100%; font-size: 1.2rem; }
+        .prompt { color: #ff0000; font-weight: bold; margin-right: 10px; }
+        .line { margin-bottom: 5px; white-space: pre-wrap; }
+        .success { color: #fff; font-weight: bold; background: rgba(0, 255, 65, 0.2); }
+        .danger { color: #ff0000; font-weight: bold; }
+        .matrix-bg { position: fixed; top: 0; left: 0; z-index: -1; opacity: 0.15; }
+    </style>
+</head>
+<body onclick="startAudio()">
+    <canvas id="canvas" class="matrix-bg"></canvas>
+    <div id="terminal">
+        <div class="line" style="color: #ff0000; font-size: 2rem; font-weight: bold;">[ BELO ROOT SYSTEM ACTIVE ]</div>
+        <div class="line">> Type 'help' to see high-level commands...</div>
+    </div>
+    <div class="input-line">
+        <span class="prompt">root@belo:~#</span>
+        <input type="text" id="cmd" autofocus autocomplete="off">
+    </div>
+
+    <script>
+        const term = document.getElementById('terminal');
+        const input = document.getElementById('cmd');
+        let audioCtx;
+
+        function startAudio() { if(!audioCtx) audioCtx = new AudioContext(); }
+
+        function playSound(freq, dur) {
+            if(!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + dur);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + dur);
+        }
+
+        async function print(text, cls = '', delay = 0) {
+            if(delay > 0) await new Promise(r => setTimeout(r, delay));
+            const div = document.createElement('div');
+            div.className = 'line ' + cls;
+            div.innerHTML = text;
+            term.appendChild(div);
+            term.scrollTop = term.scrollHeight;
+        }
+
+        input.addEventListener('keydown', async (e) => {
+            if (e.key === 'Enter') {
+                const val = input.value.trim().toLowerCase();
+                input.value = '';
+                playSound(150, 0.1);
+                await print("root@belo:~# " + val, 'danger');
+
+                if (val === 'help') {
+                    await print("AVAILABLE COMMANDS: bypass-firewall, sql-inject, brute-force, bio, clear");
+                } 
+                else if (val === 'bypass-firewall') {
+                    await print("Scanning for vulnerabilities...", '', 500);
+                    await print("Found open port: 8080 (Proxy)", 'success', 800);
+                    for(let i=0; i<8; i++) {
+                        await print(`> Injecting payload to 0x${Math.random().toString(16).slice(2,8)}...`, '', 200);
+                    }
+                    await print("FIREWALL STATUS: DEACTIVATED", 'success', 500);
+                }
+                else if (val === 'sql-inject') {
+                    await print("Targeting database: PRODUCTION_DB", 'danger', 500);
+                    await print("Executing: SELECT * FROM users WHERE '1'='1'...", '', 1000);
+                    await print("Fetching: Admin_Hash: $2y$10$8f7a...", 'success', 500);
+                    await print("Fetching: User_Table exported to /root/dump.sql", 'success', 800);
+                }
+                else if (val === 'brute-force') {
+                    await print("Loading dictionary.txt...", '', 500);
+                    for(let i=0; i<10; i++) {
+                        await print(`Attempt ${i+1}: Testing ${Math.random().toString(36).slice(5)}... FAILED`, '', 150);
+                    }
+                    await print("PASSWORD FOUND: 123456 (Standard Admin)", 'success', 500);
+                }
+                else if (val === 'bio') {
+                    await print("UNDERESTIMATE ME. THAT’LL BE FUN.", 'success');
+                }
+                else if (val === 'clear') {
+                    term.innerHTML = '';
+                }
+                else {
+                    await print("COMMAND NOT RECOGNIZED.", 'danger');
+                }
+            } else {
+                playSound(400, 0.05);
+            }
+        });
+
+        // Matrix Effect
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const columns = canvas.width / 20;
+        const drops = Array(Math.floor(columns)).fill(1);
+        function draw() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#ff0000'; ctx.font = '15px monospace';
+            drops.forEach((y, i) => {
+                ctx.fillText("BELO", i * 25, y * 20);
+                if (y * 20 > canvas.width && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            });
+        }
+        setInterval(draw, 33);
+    </script>
+</body>
+</html>
