@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ku">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BELO | ROOT SYSTEM</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=JetBrains+Mono:wght@500;800&display=swap');
+        :root { --primary: #ff0000; --secondary: #00ff41; --bg: #000; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); overflow: hidden; font-family: 'JetBrains Mono', monospace; color: var(--secondary); }
+        #matrix { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; opacity: 0.3; }
+        #terminal { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; padding: 30px; box-sizing: border-box; }
+        .header { border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; font-family: 'Syncopate', sans-serif; font-size: 0.8rem; color: #fff; text-shadow: 0 0 10px var(--primary); }
+        .main-title { font-size: 5rem; text-align: center; font-weight: 900; color: #fff; text-shadow: 4px 0 var(--primary), -4px 0 var(--secondary); margin-bottom: 20px; letter-spacing: 10px; }
+        .output { flex: 1; overflow-y: auto; scrollbar-width: none; }
+        .line { margin-bottom: 8px; line-height: 1.2; text-shadow: 0 0 5px var(--secondary); font-size: 1rem; }
+        .cmd-out { color: #fff; border-left: 4px solid var(--primary); padding-left: 15px; margin: 15px 0; background: rgba(255,0,0,0.1); font-weight: 800; }
+        .input-area { display: flex; align-items: center; background: rgba(0,0,0,0.8); border-top: 1px solid var(--primary); padding: 15px; }
+        .prompt { margin-right: 15px; color: #fff; font-weight: 900; }
+        #cmd-input { background: none; border: none; color: #fff; font-family: inherit; font-size: 1.3rem; width: 100%; outline: none; }
+        .loading-bar { color: var(--primary); font-weight: bold; }
+    </style>
+</head>
+<body onclick="initAudio()">
+    <canvas id="matrix"></canvas>
+    <div id="terminal">
+        <div class="header"><div>[HOST: BELO_ROOT_SYSTEM]</div><div id="clock">00:00:00</div></div>
+        <div class="output" id="out">
+            <h1 class="main-title">BELO</h1>
+            <p class="line">> ESTABLISHING SECURE CONNECTION TO CORE...</p>
+        </div>
+        <div class="input-area"><span class="prompt">belo@root:~#</span><input type="text" id="cmd-input" autofocus autocomplete="off"></div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('matrix'); const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const text = "BELO "; const fontSize = 20; const rows = Math.floor(canvas.height / fontSize);
+        const xPositions = Array(rows).fill(0);
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.1)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#ff0000"; ctx.font = "900 " + fontSize + "px monospace";
+            xPositions.forEach((x, i) => {
+                ctx.fillText(text.charAt(Math.floor(Math.random() * text.length)), x * fontSize, i * fontSize);
+                if (x * fontSize > canvas.width && Math.random() > 0.98) xPositions[i] = 0;
+                xPositions[i]++;
+            });
+        }
+        setInterval(drawMatrix, 30);
+
+        let audioCtx; function initAudio() { if(!audioCtx) audioCtx = new AudioContext(); }
+        function playKey(isEnter) {
+            if(!audioCtx) return;
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.frequency.setValueAtTime(isEnter ? 80 : 180, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        const input = document.getElementById('cmd-input'); const out = document.getElementById('out');
+        
+        async function runCommand(cmd) {
+            printLine(`<span style="color:#fff;"># exec: ${cmd}</span>`);
+            
+            if (cmd === 'ghost-scan') {
+                printLine("INITIALIZING NETWORK SCANNER...", "loading-bar");
+                await sleep(800); printLine("SCANNING IP RANGE: 192.168.0.1 - 192.168.255.254");
+                await sleep(1000); printLine("PACKET INJECTION: ACTIVE [UDP/TCP]");
+                await sleep(1200); printLine("FOUND: 4 HIDDEN NODES IN SECTOR 7", "cmd-out");
+            } 
+            else if (cmd === 'brute-force') {
+                printLine("LOADING WORDLIST: /usr/share/passwords.txt", "loading-bar");
+                await sleep(1000);
+                for(let i=0; i<5; i++) {
+                    printLine(`TRYING: ${Math.random().toString(36).substring(5)}... [FAILED]`);
+                    await sleep(400);
+                }
+                printLine("ACCESS GRANTED: 100% BYPASS COMPLETE", "cmd-out");
+            }
+            else if (cmd === 'system-override') {
+                printLine("GAINING SUDO PRIVILEGES...", "loading-bar");
+                await sleep(900); printLine("ENCRYPTING ROOT DIRECTORY...");
+                await sleep(1100); printLine("KERNEL PATCHED SUCCESSFULLY", "cmd-out");
+            }
+            else if (cmd === 'bio') {
+                await sleep(500); printLine("UNDERESTIMATE ME. THAT’LL BE FUN.", "cmd-out");
+            }
+            else if (cmd === 'help') {
+                printLine("AVAILABLE: ghost-scan, brute-force, system-override, bio, socials, clear");
+            }
+            else if (cmd === 'socials') {
+                printLine("DECRYPTING PERSONAL LINKS...", "loading-bar");
+                await sleep(800);
+                printLine(`<a href="https://www.instagram.com/i_eminki.01" target="_blank" style="color:#00ff41; border:1px solid; padding:5px; margin:5px;">INSTAGRAM</a>`);
+                printLine(`<a href="https://snapchat.com/t/FIuxhe8f" target="_blank" style="color:#00ff41; border:1px solid; padding:5px; margin:5px;">SNAPCHAT</a>`);
+            }
+            else if (cmd === 'clear') { out.innerHTML = '<h1 class="main-title">BELO</h1>'; }
+            else { printLine("ERROR: UNKNOWN COMMAND_SEQUENCE"); }
+            
+            out.scrollTop = out.scrollHeight;
+        }
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                playKey(true);
+                const cmd = input.value.trim().toLowerCase();
+                input.value = '';
+                runCommand(cmd);
+            } else { playKey(false); }
+        });
+
+        function printLine(txt, cls = '') { const p = document.createElement('p'); p.className = 'line ' + cls; p.innerHTML = txt; out.appendChild(p); }
+        function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+    </script>
+</body>
+</html>
