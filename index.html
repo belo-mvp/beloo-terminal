@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ku">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MVP-BELO | ELITE SYSTEM</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        
+        :root { --neon: #00ff41; --bg: #020202; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); overflow: hidden; font-family: 'Share Tech Mono', monospace; color: var(--neon); }
+        
+        /* Scanlines effect for "Raqi" look */
+        body::before { content: " "; position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); z-index: 10; background-size: 100% 4px, 3px 100%; pointer-events: none; }
+        
+        #matrix-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; opacity: 0.25; filter: blur(0.5px); }
+        
+        #terminal { position: relative; z-index: 5; height: 100vh; display: flex; flex-direction: column; padding: 40px; box-sizing: border-box; background: radial-gradient(circle, rgba(0,40,0,0.1) 0%, rgba(0,0,0,1) 100%); }
+        
+        .header-box { border-left: 4px solid var(--neon); padding-left: 20px; margin-bottom: 30px; animation: flicker 2s infinite; }
+        .header-title { font-size: 2.2rem; font-weight: bold; letter-spacing: 5px; text-shadow: 0 0 15px var(--neon); }
+        
+        .output { flex: 1; overflow-y: auto; scrollbar-width: none; }
+        .output::-webkit-scrollbar { display: none; }
+        
+        .line { margin-bottom: 10px; font-size: 1.2rem; text-shadow: 0 0 5px var(--neon); }
+        .user-tag { color: #fff; text-shadow: 0 0 10px #fff; }
+        
+        .underestimate-style { background: rgba(255, 0, 60, 0.1); border: 1px solid #ff003c; color: #ff003c; padding: 20px; margin: 20px 0; font-size: 1.5rem; text-align: center; text-transform: uppercase; box-shadow: 0 0 30px rgba(255,0,60,0.3); letter-spacing: 3px; font-weight: bold; }
+        
+        .input-wrap { display: flex; align-items: center; padding-top: 25px; border-top: 1px solid rgba(0,255,65,0.3); }
+        #input-command { background: none; border: none; color: #fff; font-family: inherit; font-size: 1.3rem; width: 100%; outline: none; caret-color: var(--neon); }
+        
+        @keyframes flicker { 0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; } 20%, 24%, 55% { opacity: 0.5; } }
+    </style>
+</head>
+<body>
+    <canvas id="matrix-canvas"></canvas>
+    <div id="terminal">
+        <div class="header-box">
+            <div class="header-title">MVP_BELO_SYSTEM_V5</div>
+            <div style="font-size: 0.9rem; opacity: 0.7;">SECURITY LEVEL: ELITE | ENCRYPTED LINK</div>
+        </div>
+        
+        <div class="output" id="terminal-output">
+            <p class="line">> BIOMETRIC SCAN: COMPLETED.</p>
+            <p class="line">> ACCESS GRANTED TO MVP_BELO KERNEL.</p>
+            <p class="line">> ENTER COMMAND (HELP) TO PROCEED.</p>
+        </div>
+
+        <div class="input-wrap">
+            <span class="user-tag" style="margin-right:10px;">ROOT@MVP_BELO:~#</span>
+            <input type="text" id="input-command" autofocus autocomplete="off">
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        
+        const matrixName = "MVP BELO ";
+        const fontSize = 18;
+        const drops = Array(Math.floor(canvas.width / fontSize)).fill(1);
+
+        function draw() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.08)'; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0f0'; 
+            ctx.font = fontSize + 'px monospace';
+            drops.forEach((y, i) => {
+                const text = matrixName.charAt(Math.floor(Math.random() * matrixName.length));
+                ctx.fillText(text, i * fontSize, y * fontSize);
+                if (y * fontSize > canvas.height && Math.random() > 0.98) drops[i] = 0;
+                drops[i]++;
+            });
+        }
+        setInterval(draw, 40);
+
+        const input = document.getElementById('input-command');
+        const output = document.getElementById('terminal-output');
+        const links = { 'instagram': "https://www.instagram.com/i_eminki.01", 'snapchat': "https://snapchat.com/t/FIuxhe8f", 'tiktok': "https://www.tiktok.com/@1st.belo" };
+
+        document.addEventListener('click', () => input.focus());
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const cmd = input.value.trim().toLowerCase();
+                input.value = '';
+                if (!cmd) return;
+
+                print(`<span class="user-tag">ROOT@MVP_BELO:~#</span> ${cmd}`);
+
+                if (cmd === 'help') {
+                    print("> SYSTEM OVERRIDE: help, instagram, snapchat, tiktok, underestimate, clear");
+                } else if (links[cmd]) {
+                    print(`> TUNNELING CONNECTION TO ${cmd.toUpperCase()}...`);
+                    setTimeout(() => window.open(links[cmd], '_blank'), 600);
+                } else if (cmd === 'underestimate') {
+                    print("Underestimate me. That'll be fun.", "underestimate-style");
+                } else if (cmd === 'clear') {
+                    output.innerHTML = '';
+                } else {
+                    print(`> COMMAND_ERROR: '${cmd}' UNRECOGNIZED.`);
+                }
+                output.scrollTop = output.scrollHeight;
+            }
+        });
+
+        function print(text, cls = '') {
+            const d = document.createElement('div'); d.className = 'line ' + cls;
+            d.innerHTML = text; output.appendChild(d);
+        }
+    </script>
+</body>
+</html>
