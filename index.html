@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ku">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BELO | GHOST PROTOCOL</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=JetBrains+Mono:wght@700&display=swap');
+        :root { --primary: #ff0000; --secondary: #00ff41; --bg: #000; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); overflow: hidden; font-family: 'JetBrains Mono', monospace; }
+        #matrix { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; opacity: 0.2; }
+        #terminal { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; padding: 15px; box-sizing: border-box; transition: all 0.2s; }
+        
+        .main-title { 
+            font-family: 'Orbitron', sans-serif; font-size: 3.5rem; color: #fff; text-align: center;
+            text-shadow: 0 0 20px var(--primary); animation: breath 3s infinite; letter-spacing: 10px; margin: 10px 0;
+        }
+        @keyframes breath { 0%, 100% { opacity: 0.7; transform: scale(0.95); } 50% { opacity: 1; transform: scale(1.05); } }
+
+        .output { flex: 1; overflow-y: auto; scrollbar-width: none; color: var(--secondary); }
+        .line { margin-bottom: 4px; font-size: 0.9rem; font-weight: bold; }
+        .ghost-line { color: #ff0000; text-shadow: 0 0 10px #ff0000; font-size: 1.2rem; background: rgba(255,0,0,0.1); padding: 5px; }
+        
+        .input-area { display: flex; align-items: center; background: rgba(20,0,0,0.8); border: 2px solid var(--primary); padding: 12px; box-shadow: 0 0 20px var(--primary); }
+        .prompt { margin-right: 8px; color: var(--primary); font-weight: 900; }
+        #cmd-input { background: none; border: none; color: #fff; font-family: inherit; font-size: 1.2rem; width: 100%; outline: none; }
+
+        /* Glitch Effect */
+        .glitch { animation: glitch-anim 0.2s infinite; filter: hue-rotate(90deg); }
+        @keyframes glitch-anim { 0% { transform: translate(2px, 2px); } 50% { transform: translate(-2px, -2px); } 100% { transform: translate(0); } }
+    </style>
+</head>
+<body onclick="initAudio()">
+    <canvas id="matrix"></canvas>
+    <div id="terminal">
+        <h1 class="main-title">BELO</h1>
+        <div class="output" id="out"><p class="line">> PROTOCOL_Z_INITIALIZED...</p></div>
+        <div class="input-area"><span class="prompt">ROOT@BELO:~#</span><input type="text" id="cmd-input" autofocus autocomplete="off"></div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('matrix'); const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const text = "0101 BELO "; const fontSize = 16; const rows = Math.floor(canvas.height / fontSize);
+        const xPositions = Array(rows).fill(0);
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.1)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#ff0000"; ctx.font = "900 " + fontSize + "px monospace";
+            xPositions.forEach((x, i) => {
+                ctx.fillText(text.charAt(Math.floor(Math.random() * text.length)), x * fontSize, i * fontSize);
+                if (x * fontSize > canvas.width && Math.random() > 0.98) xPositions[i] = 0;
+                xPositions[i]++;
+            });
+        }
+        setInterval(drawMatrix, 35);
+
+        let audioCtx; function initAudio() { if(!audioCtx) audioCtx = new AudioContext(); }
+        function playSfx(f, d, g=0.1) {
+            if(!audioCtx) return;
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+            gain.gain.setValueAtTime(g, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + d);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + d);
+        }
+
+        const input = document.getElementById('cmd-input'); const out = document.getElementById('out');
+        const term = document.getElementById('terminal');
+
+        async function runCommand(cmd) {
+            printLine(`<span style="color:#fff;">[COMMAND]: ${cmd}</span>`);
+            
+            if (cmd === 'ghost-scan') {
+                term.classList.add('glitch');
+                for(let i=0; i<15; i++) {
+                    playSfx(Math.random()*1000, 0.1, 0.05);
+                    printLine(`> SCANNING PHANTOM SECTOR: ${Math.random().toString(16).toUpperCase()}`, "ghost-line");
+                    await sleep(100);
+                }
+                term.classList.remove('glitch');
+                printLine("SCAN COMPLETE. 4 GHOST NODES FOUND.", "ghost-line");
+            }
+            else if (cmd === 'system-kill') {
+                printLine("DELETING SYSTEM32...", "ghost-line");
+                await sleep(1000); term.style.opacity = "0";
+                await sleep(1000); term.style.opacity = "1";
+                printLine("CRITICAL FAILURE: KERNEL PANIC", "ghost-line");
+            }
+            else if (cmd === 'neural-hack') {
+                printLine("CONNECTING TO BRAIN-LINK...");
+                await sleep(800);
+                let i=0; let iv = setInterval(() => {
+                    printLine("SYNCING NEURONS... " + (i*10) + "%");
+                    i++; if(i>10) { clearInterval(iv); printLine("MIND CONTROL ACTIVE.", "ghost-line"); }
+                }, 150);
+            }
+            else if (cmd === 'database-wipe') {
+                for(let i=0; i<10; i++) {
+                    printLine(`ERASING SECTOR ${i}... SUCCESS`);
+                    await sleep(200);
+                }
+                printLine("DATABASE IS NOW EMPTY.", "ghost-line");
+            }
+            else if (cmd === 'socials') {
+                printLine(`<a href="https://www.instagram.com/i_eminki.01" target="_blank" style="color:white; border:2px solid red; padding:5px; text-decoration:none;">INSTAGRAM</a> <a href="https://snapchat.com/t/FIuxhe8f" target="_blank" style="color:white; border:2px solid red; padding:5px; text-decoration:none;">SNAPCHAT</a>`);
+            }
+            else if (cmd === 'bio') { printLine("Underestimate me. That’ll be fun.", "ghost-line"); }
+            else if (cmd === 'clear') { out.innerHTML = ''; }
+            else { printLine("ERROR: ACCESS_LEVEL_INSUFFICIENT"); }
+            out.scrollTop = out.scrollHeight;
+        }
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { playSfx(50, 0.5, 0.4); runCommand(input.value.trim().toLowerCase()); input.value = ''; }
+            else { playSfx(300, 0.05, 0.05); }
+        });
+
+        function printLine(txt, cls = '') { const p = document.createElement('p'); p.className = 'line ' + cls; p.innerHTML = txt; out.appendChild(p); out.scrollTop = out.scrollHeight; }
+        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+    </script>
+</body>
+</html>
