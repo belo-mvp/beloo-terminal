@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ku">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BELO | OVERLORD ROOT</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Syncopate:wght@700&family=JetBrains+Mono:wght@500;800&display=swap');
+        :root { --primary: #ff0000; --secondary: #00ff41; --bg: #000; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); overflow: hidden; font-family: 'JetBrains Mono', monospace; color: var(--secondary); }
+        #matrix { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; opacity: 0.25; }
+        #terminal { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; padding: 30px; box-sizing: border-box; background: rgba(0,0,0,0.85); }
+        .header { border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; font-family: 'Syncopate', sans-serif; font-size: 0.8rem; color: #fff; text-shadow: 0 0 15px var(--primary); }
+        .main-title { font-size: 6rem; text-align: center; font-weight: 900; color: #fff; text-shadow: 5px 0 var(--primary), -5px 0 var(--secondary); margin-bottom: 10px; letter-spacing: 15px; animation: rumble 0.1s infinite alternate; }
+        @keyframes rumble { from { transform: translate(1px, 1px); } to { transform: translate(-1px, -1px); } }
+        .output { flex: 1; overflow-y: auto; scrollbar-width: none; }
+        .line { margin-bottom: 5px; line-height: 1.1; text-shadow: 0 0 3px var(--secondary); font-size: 0.95rem; }
+        .cmd-out { color: #fff; border-left: 5px solid var(--primary); padding-left: 15px; margin: 15px 0; background: rgba(255,0,0,0.2); font-weight: 900; font-size: 1.1rem; }
+        .input-area { display: flex; align-items: center; background: #000; border: 2px solid var(--primary); padding: 20px; box-shadow: 0 0 50px rgba(255,0,0,0.4); }
+        .prompt { margin-right: 15px; color: var(--primary); font-weight: 900; font-size: 1.4rem; }
+        #cmd-input { background: none; border: none; color: #fff; font-family: inherit; font-size: 1.4rem; width: 100%; outline: none; }
+        .warning { color: yellow; font-weight: bold; animation: flash 0.5s infinite; }
+        @keyframes flash { 50% { opacity: 0; } }
+    </style>
+</head>
+<body onclick="initAudio()">
+    <canvas id="matrix"></canvas>
+    <div id="terminal">
+        <div class="header"><div>[SYSTEM_STATUS: UNSTOPPABLE]</div><div>[HOST: BELO_ROOT]</div><div id="clock">00:00:00</div></div>
+        <div class="output" id="out">
+            <h1 class="main-title">BELO</h1>
+            <p class="line">> LEVEL 0 ACCESS GRANTED... NO LIMITS FOUND.</p>
+        </div>
+        <div class="input-area"><span class="prompt">root@belo:~#</span><input type="text" id="cmd-input" autofocus autocomplete="off"></div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('matrix'); const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const text = "BELO 01 "; const fontSize = 18; const rows = Math.floor(canvas.height / fontSize);
+        const xPositions = Array(rows).fill(0);
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.1)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#ff0000"; ctx.font = "900 " + fontSize + "px monospace";
+            xPositions.forEach((x, i) => {
+                ctx.fillText(text.charAt(Math.floor(Math.random() * text.length)), x * fontSize, i * fontSize);
+                if (x * fontSize > canvas.width && Math.random() > 0.98) xPositions[i] = 0;
+                xPositions[i]++;
+            });
+        }
+        setInterval(drawMatrix, 35);
+
+        let audioCtx; function initAudio() { if(!audioCtx) audioCtx = new AudioContext(); }
+        function playKey(isEnter) {
+            if(!audioCtx) return;
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.frequency.setValueAtTime(isEnter ? 50 : 160, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + (isEnter ? 0.5 : 0.1));
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + (isEnter ? 0.5 : 0.1));
+        }
+
+        const input = document.getElementById('cmd-input'); const out = document.getElementById('out');
+        
+        async function runCommand(cmd) {
+            printLine(`<span style="color:#fff;"># EXECUTING_HIGH_LEVEL_AUTH: ${cmd}</span>`);
+            
+            if (cmd === 'bypass-firewall') {
+                printLine("<span class='warning'>[!] DETECTING WAF... ATTEMPTING TUNNELING</span>");
+                for(let i=0; i<10; i++) {
+                    await sleep(200); printLine(`> EXPLOITING BUFFER OVERFLOW AT 0x${Math.floor(Math.random()*16777215).toString(16)}...`);
+                }
+                printLine("FIREWALL BYPASSED. PORT 80/443 OPEN.", "cmd-out");
+            } 
+            else if (cmd === 'sql-injection') {
+                printLine("SEARCHING FOR VULNERABLE PARAMETERS...", "loading-bar");
+                await sleep(800); printLine("INJECTING: ' OR 1=1 --");
+                await sleep(1000); printLine("DUMPING DATABASE: [users], [passwords], [salts]");
+                await sleep(1200); printLine("TABLE 'ADMIN' EXTRACTED SUCCESSFULLY", "cmd-out");
+            }
+            else if (cmd === 'ddos-attack') {
+                printLine("SYNCING BOTNET NODES...", "warning");
+                await sleep(1000);
+                let i = 0; let iv = setInterval(() => {
+                    printLine(`[SENDING] 65535 BYTES TO TARGET -> ATTACK_STRENGTH: ${Math.floor(Math.random()*100)}%`);
+                    i++; if(i>15) { clearInterval(iv); printLine("TARGET DOWN. OVERLOAD COMPLETE.", "cmd-out"); }
+                    out.scrollTop = out.scrollHeight;
+                }, 150);
+            }
+            else if (cmd === 'remote-access') {
+                printLine("GENERATING REVERSE SHELL...", "loading-bar");
+                await sleep(900); printLine("CONNECTING TO 127.0.0.1:4444");
+                await sleep(1100); printLine("SHELL ESTABLISHED: USER=ROOT", "cmd-out");
+            }
+            else if (cmd === 'bio') {
+                await sleep(500); printLine("UNDERESTIMATE ME. THAT’LL BE FUN.", "cmd-out");
+            }
+            else if (cmd === 'help') {
+                printLine("GOD_LEVEL_CMDS: bypass-firewall, sql-injection, ddos-attack, remote-access, bio, socials, clear");
+            }
+            else if (cmd === 'socials') {
+                printLine(`<a href="https://www.instagram.com/i_eminki.01" target="_blank" style="color:#00ff41; border:2px solid; padding:10px; margin:10px; display:inline-block;">INSTAGRAM_ADMIN</a>`);
+            }
+            else if (cmd === 'clear') { out.innerHTML = '<h1 class="main-title">BELO</h1>'; }
+            else { printLine("ACCESS DENIED: INSUFFICIENT PERMISSIONS"); }
+            
+            out.scrollTop = out.scrollHeight;
+        }
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                playKey(true);
+                const cmd = input.value.trim().toLowerCase();
+                input.value = '';
+                runCommand(cmd);
+            } else { playKey(false); }
+        });
+
+        function printLine(txt, cls = '') { const p = document.createElement('p'); p.className = 'line ' + cls; p.innerHTML = txt; out.appendChild(p); }
+        function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+        setInterval(() => { document.getElementById('clock').innerText = new Date().toLocaleTimeString(); }, 1000);
+    </script>
+</body>
+</html>
