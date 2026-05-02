@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ku">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MVP BELO | BLUE STREAM</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        
+        :root { --blue: #0088ff; --bg: #000; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); overflow: hidden; font-family: 'JetBrains Mono', monospace; color: var(--blue); }
+
+        /* Horizontal Blue Matrix */
+        #matrix { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; opacity: 0.2; }
+
+        #terminal { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; padding: 40px; box-sizing: border-box; background: radial-gradient(circle, rgba(0,136,255,0.02) 0%, #000 100%); }
+
+        .header { border-bottom: 1px solid rgba(0,136,255,0.2); padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; font-weight: bold; letter-spacing: 2px; }
+
+        .output { flex: 1; overflow-y: auto; scrollbar-width: none; }
+        .output::-webkit-scrollbar { display: none; }
+
+        .line { margin-bottom: 10px; line-height: 1.5; text-shadow: 0 0 8px var(--blue); }
+        .quote-line { color: #fff; font-size: 1.2rem; border-left: 3px solid var(--blue); padding-left: 15px; margin: 20px 0; letter-spacing: 3px; }
+
+        .input-area { display: flex; align-items: center; margin-top: 20px; }
+        .prompt { margin-right: 10px; color: #fff; }
+        #cmd-input { background: none; border: none; color: var(--blue); font-family: inherit; font-size: 1.1rem; width: 100%; outline: none; }
+    </style>
+</head>
+<body>
+    <canvas id="matrix"></canvas>
+    <div id="terminal">
+        <div class="header">
+            <div>SYSTEM: ONLINE</div>
+            <div id="clock">00:00:00</div>
+        </div>
+        
+        <div class="output" id="out">
+            <p class="line">Establishing secure connection...</p>
+            <p class="line">Welcome, MVP BELO.</p>
+        </div>
+
+        <div class="input-area">
+            <span class="prompt">guest@mvp_belo:~$</span>
+            <input type="text" id="cmd-input" autofocus autocomplete="off">
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+
+        const text = "MVP BELO ";
+        const fontSize = 16;
+        const rows = Math.floor(canvas.height / fontSize);
+        const xPositions = Array(rows).fill(0);
+
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#0088ff"; 
+            ctx.font = fontSize + "px monospace";
+
+            xPositions.forEach((x, i) => {
+                const char = text.charAt(Math.floor(Math.random() * text.length));
+                ctx.fillText(char, x * fontSize, i * fontSize);
+                if (x * fontSize > canvas.width && Math.random() > 0.975) xPositions[i] = 0;
+                xPositions[i]++;
+            });
+        }
+        setInterval(drawMatrix, 50);
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').innerText = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0') + ":" + now.getSeconds().toString().padStart(2, '0');
+        }
+        setInterval(updateClock, 1000); updateClock();
+
+        const input = document.getElementById('cmd-input');
+        const out = document.getElementById('out');
+        const links = { 
+            'instagram': "https://www.instagram.com/i_eminki.01", 
+            'snapchat': "https://snapchat.com/t/FIuxhe8f", 
+            'tiktok': "https://www.tiktok.com/@1st.belo" 
+        };
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const cmd = input.value.trim().toLowerCase();
+                input.value = '';
+                printLine(`<span class="prompt">guest@mvp_belo:~$</span> ${cmd}`);
+
+                if (cmd === 'help') {
+                    printLine("Commands: help, bio, instagram, snapchat, tiktok, clear");
+                } else if (cmd === 'bio') {
+                    printLine("Underestimate me. That’ll be fun.", "quote-line");
+                } else if (links[cmd]) {
+                    printLine(`Redirecting...`);
+                    setTimeout(() => window.open(links[cmd], '_blank'), 500);
+                } else if (cmd === 'clear') {
+                    out.innerHTML = '';
+                } else {
+                    printLine(`Error: '${cmd}' not recognized.`);
+                }
+                out.scrollTop = out.scrollHeight;
+            }
+        });
+
+        function printLine(txt, cls = '') {
+            const p = document.createElement('p'); p.className = 'line ' + cls;
+            p.innerHTML = txt; out.appendChild(p);
+        }
+        document.addEventListener('click', () => input.focus());
+    </script>
+</body>
+</html>
