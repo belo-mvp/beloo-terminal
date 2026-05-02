@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ku">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BELO-MVP | PREMIUM TERMINAL</title>
+    <style>
+        :root { --neon-green: #00ff41; --dark-bg: #050505; --glitch-red: #ff003c; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background-color: var(--dark-bg); overflow: hidden; display: flex; flex-direction: column; font-family: 'JetBrains Mono', 'Courier New', monospace; color: var(--neon-green); }
+        #matrix-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; opacity: 0.2; pointer-events: none; }
+        #terminal { position: relative; z-index: 2; flex: 1; padding: 30px; display: flex; flex-direction: column; justify-content: flex-end; background: radial-gradient(circle at center, rgba(0, 50, 0, 0.1) 0%, rgba(0, 0, 0, 1) 100%); }
+        .output { overflow-y: auto; max-height: 85%; padding-right: 10px; scrollbar-width: none; }
+        .output::-webkit-scrollbar { display: none; }
+        .line { margin: 5px 0; line-height: 1.6; font-size: 1.1rem; letter-spacing: 0.5px; }
+        .user-path { color: #fff; font-weight: bold; margin-right: 10px; text-shadow: 0 0 5px var(--neon-green); }
+        .system-highlight { color: var(--glitch-red); font-weight: 900; text-transform: uppercase; letter-spacing: 2px; border: 1px solid var(--glitch-red); padding: 10px; display: inline-block; margin: 15px 0; box-shadow: 0 0 15px rgba(255, 0, 60, 0.4); animation: pulse 1.5s infinite; }
+        .prompt-container { display: flex; align-items: center; margin-top: 15px; border-top: 1px dashed rgba(0, 255, 65, 0.3); padding-top: 15px; }
+        #input-command { background: none; border: none; color: #fff; font-family: inherit; font-size: 1.2rem; width: 100%; outline: none; caret-color: var(--neon-green); }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        .header-text { font-size: 1.8rem; font-weight: bold; margin-bottom: 20px; border-bottom: 2px solid var(--neon-green); display: inline-block; }
+    </style>
+</head>
+<body>
+    <canvas id="matrix-canvas"></canvas>
+    <div id="terminal">
+        <div class="output" id="terminal-output">
+            <div class="header-text">SYSTEM.ROOT://BELO_MVP_V3</div>
+            <p class="line">Establishing secure connection... [DONE]</p>
+            <p class="line">Type 'help' to access core protocols.</p>
+        </div>
+        <div class="prompt-container">
+            <span class="user-path">belo-mvp@premium:~$</span>
+            <input type="text" id="input-command" autofocus autocomplete="off">
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const matrixChars = "010101-BELO-MVP-SECURITY-";
+        const fontSize = 18;
+        const drops = Array(Math.floor(canvas.width / fontSize)).fill(1);
+        function draw() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#0f0'; ctx.font = fontSize + 'px monospace';
+            drops.forEach((y, i) => {
+                const char = matrixChars[Math.floor(Math.random() * matrixChars.length)];
+                ctx.fillText(char, i * fontSize, y * fontSize);
+                if (y * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            });
+        }
+        setInterval(draw, 40);
+
+        const input = document.getElementById('input-command');
+        const output = document.getElementById('terminal-output');
+        const social = {
+            'instagram': "https://www.instagram.com/i_eminki.01",
+            'snapchat': "https://snapchat.com/t/FIuxhe8f",
+            'tiktok': "https://www.tiktok.com/@1st.belo"
+        };
+
+        document.addEventListener('click', () => input.focus());
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const cmd = input.value.trim().toLowerCase();
+                input.value = '';
+                if (!cmd) return;
+
+                print(`<span class="user-path">belo-mvp@premium:~$</span> ${cmd}`);
+
+                if (cmd === 'help') {
+                    print("Available Protocols: help, instagram, snapchat, tiktok, underestimate, clear");
+                } else if (social[cmd]) {
+                    print(`> SECURE REDIRECT: Initiating ${cmd.toUpperCase()} link...`);
+                    setTimeout(() => window.open(social[cmd], '_blank'), 600);
+                } else if (cmd === 'underestimate') {
+                    print("Underestimate me. That'll be fun.", "system-highlight");
+                } else if (cmd === 'clear') {
+                    output.innerHTML = '<div class="header-text">SYSTEM.ROOT://BELO_MVP_V3</div>';
+                } else {
+                    print(`CRITICAL ERROR: Protocol '${cmd}' not recognized.`);
+                }
+                output.scrollTop = output.scrollHeight;
+            }
+        });
+
+        function print(text, cls = '') {
+            const div = document.createElement('div');
+            div.className = 'line ' + cls;
+            div.innerHTML = text;
+            output.appendChild(div);
+        }
+    </script>
+</body>
+</html>
