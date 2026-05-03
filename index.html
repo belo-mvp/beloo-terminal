@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ku">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BELO | OS TERMINAL</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=JetBrains+Mono:wght@700&display=swap');
+        :root { --primary: #ff0000; --secondary: #00ff41; --bg: #000; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); overflow: hidden; font-family: 'JetBrains Mono', monospace; color: var(--secondary); }
+        #matrix { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; opacity: 0.15; }
+        #terminal { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; padding: 15px; box-sizing: border-box; background: rgba(0,0,0,0.8); }
+        .profile-section { position: relative; width: 220px; height: 220px; margin: 10px auto; display: flex; justify-content: center; align-items: center; }
+        .rotating-txt { position: absolute; width: 100%; height: 100%; animation: rotateText 12s linear infinite; }
+        @keyframes rotateText { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .rotating-txt svg { width: 100%; height: 100%; }
+        .rotating-txt text { fill: var(--primary); font-weight: 900; font-size: 13px; text-transform: uppercase; letter-spacing: 3px; }
+        .profile-img { width: 130px; height: 130px; border-radius: 50%; border: 3px solid var(--secondary); overflow: hidden; box-shadow: 0 0 20px var(--secondary); z-index: 5; }
+        .profile-img img { width: 100%; height: 100%; object-fit: cover; }
+        .glitch-title { font-family: 'Orbitron', sans-serif; font-size: 2.5rem; color: #fff; text-align: center; text-shadow: 2px 2px var(--primary); letter-spacing: 8px; margin: 10px 0; }
+        .output-box { flex: 1; overflow-y: auto; padding: 10px; border: 1px solid rgba(0,255,65,0.2); margin-bottom: 15px; }
+        .line { margin-bottom: 8px; font-size: 0.85rem; line-height: 1.4; min-height: 1.2em; }
+        .cmd-color { color: #fff; font-weight: bold; }
+        .highlight { color: var(--primary); text-shadow: 0 0 5px var(--primary); }
+        .btn-link { display: block; color: #fff; text-decoration: none; border: 1px solid var(--primary); padding: 10px; margin: 8px 0; background: rgba(255,0,0,0.1); text-align: center; border-radius: 4px; transition: 0.3s; }
+        .btn-link:hover { background: var(--primary); box-shadow: 0 0 15px var(--primary); }
+        .input-wrap { display: flex; align-items: center; border-top: 2px solid var(--primary); padding-top: 10px; }
+        .prefix { color: var(--primary); font-weight: 900; margin-right: 10px; }
+        #user-input { background: none; border: none; color: #fff; font-family: inherit; font-size: 1.1rem; width: 100%; outline: none; }
+    </style>
+</head>
+<body onclick="initAudio()">
+    <canvas id="matrix"></canvas>
+    <div id="terminal">
+        <div class="profile-section">
+            <div class="rotating-txt">
+                <svg viewBox="0 0 200 200">
+                    <path id="txtPath" d="M 100, 100 m -75, 0 a 75,75 0 1,1 150,0 a 75,75 0 1,1 -150,0" fill="transparent"/>
+                    <text><textPath href="#txtPath">MVP BELO • DUHOK OPS • MVP BELO • </textPath></text>
+                </svg>
+            </div>
+            <div class="profile-img"><img src="image_25.png.JPG" alt="BELO"></div>
+        </div>
+        <h1 class="glitch-title">BELO</h1>
+        <div class="output-box" id="terminal-out"></div>
+        <div class="input-wrap">
+            <span class="prefix">root@belo:~#</span>
+            <input type="text" id="user-input" autofocus autocomplete="off" placeholder="...">
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('matrix'); const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const chars = "0101010101 BELO DUHOK";
+        const drops = Array(Math.floor(canvas.width/14)).fill(1);
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#ff0000"; ctx.font = "14px monospace";
+            drops.forEach((y, x) => {
+                ctx.fillText(chars[Math.floor(Math.random()*chars.length)], x*14, y*14);
+                if(y*14 > canvas.height && Math.random() > 0.975) drops[x] = 0;
+                drops[x]++;
+            });
+        }
+        setInterval(drawMatrix, 40);
+
+        const out = document.getElementById('terminal-out');
+        const input = document.getElementById('user-input');
+        
+        // --- Synthetic Keyboard Click Generator ---
+        let audioCtx;
+        function initAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+
+        function playClick() {
+            if(!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            const filter = audioCtx.createBiquadFilter();
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(100 + Math.random() * 50, audioCtx.currentTime);
+            
+            filter.type = 'bandpass';
+            filter.frequency.value = 800;
+
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.03);
+
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.03);
+        }
+
+        async function typeWrite(text, cls = '') {
+            const div = document.createElement('div');
+            div.className = 'line ' + cls;
+            out.appendChild(div);
+            for (let char of text) {
+                div.innerHTML += char;
+                playClick();
+                await new Promise(r => setTimeout(r, 40));
+            }
+            out.scrollTop = out.scrollHeight;
+        }
+
+        async function processCmd(cmd) {
+            const command = cmd.toLowerCase().trim();
+            await typeWrite(`> ${cmd}`, 'cmd-color');
+            if (command === 'help') {
+                await typeWrite("Available: bio, socials, status, clear");
+            } else if (command === 'bio') {
+                await typeWrite("Underestimate me. That’ll be fun.", "highlight");
+            } else if (command === 'socials') {
+                await typeWrite("Connecting...");
+                const links = document.createElement('div');
+                links.innerHTML = `
+                    <a href="https://www.instagram.com/i_eminki.01" target="_blank" class="btn-link">INSTAGRAM</a>
+                    <a href="https://snapchat.com/t/FIuxhe8f" target="_blank" class="btn-link">SNAPCHAT</a>
+                    <a href="https://www.tiktok.com/@1st.belo?_r=1&_t=ZS-962fAMmUuvK" target="_blank" class="btn-link">TIKTOK</a>`;
+                out.appendChild(links);
+            } else if (command === 'status') {
+                await typeWrite("Location: Duhok, Kurdistan");
+                await typeWrite("Status: System Secure");
+            } else if (command === 'clear') {
+                out.innerHTML = '';
+            } else { await typeWrite("Error: Access Denied."); }
+        }
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { processCmd(input.value); input.value = ''; }
+        });
+
+        window.onload = () => { setTimeout(() => typeWrite("BELO_OS_V3.1_READY... TYPE 'HELP'"), 1000); };
+    </script>
+</body>
+</html>
