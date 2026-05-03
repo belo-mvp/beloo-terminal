@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BELO | ELITE TERMINAL</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=JetBrains+Mono:wght@700&display=swap');
+        :root { --primary: #ff0000; --secondary: #00ff41; --bg: #000; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: var(--bg); overflow: hidden; font-family: 'JetBrains Mono', monospace; color: var(--secondary); }
+        #matrix { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; opacity: 0.15; }
+        #terminal { position: relative; z-index: 10; height: 100vh; display: flex; flex-direction: column; padding: 15px; box-sizing: border-box; background: rgba(0,0,0,0.85); }
+        .header-tools { display: flex; justify-content: space-between; align-items: center; padding: 5px 10px; border: 1px solid var(--primary); background: rgba(255,0,0,0.1); border-radius: 5px; margin-bottom: 10px; }
+        #digital-clock { font-family: 'Orbitron', sans-serif; color: #fff; font-size: 1.1rem; text-shadow: 0 0 10px var(--primary); font-weight: 900; }
+        .sys-status { font-size: 0.8rem; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; font-weight: 900; }
+        .profile-section { position: relative; width: 180px; height: 180px; margin: 10px auto; display: flex; justify-content: center; align-items: center; }
+        .rotating-txt { position: absolute; width: 100%; height: 100%; animation: rotateText 12s linear infinite; }
+        @keyframes rotateText { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .rotating-txt svg { width: 100%; height: 100%; overflow: visible; }
+        .rotating-txt text { fill: var(--primary); font-weight: 900; font-size: 13px; letter-spacing: 2.2px; }
+        .profile-img { width: 110px; height: 110px; border-radius: 50%; border: 2px solid var(--primary); overflow: hidden; box-shadow: 0 0 20px var(--primary); z-index: 5; background: #000; }
+        #profile-video { width: 100%; height: 100%; object-fit: cover; }
+        .output-box { flex: 1; overflow-y: auto; padding: 10px; border: 1px solid rgba(255,0,0,0.2); margin-bottom: 10px; border-radius: 5px; background: rgba(0,0,0,0.5); text-align: left; direction: ltr; }
+        .line { margin-bottom: 6px; font-size: 0.85rem; line-height: 1.5; }
+        .ku-text { text-align: right; direction: rtl; font-family: sans-serif; }
+        .cmd-color { color: #fff; font-weight: bold; background: rgba(255,0,0,0.3); padding: 2px 6px; border-radius: 3px; }
+        .highlight { color: var(--primary); font-weight: bold; }
+        .success { color: #00ff41; font-weight: bold; }
+        .btn-link { display: inline-block; margin: 5px; padding: 8px 15px; background: var(--primary); color: #fff; text-decoration: none; border-radius: 4px; font-weight: bold; font-family: sans-serif; font-size: 0.8rem; }
+        .input-wrap { display: flex; align-items: center; background: rgba(255,0,0,0.1); padding: 12px; border-radius: 5px; border: 1px solid var(--primary); }
+        .prefix { color: var(--primary); font-weight: 900; margin-right: 10px; font-size: 0.8rem; }
+        #user-input { background: none; border: none; color: #fff; font-family: inherit; font-size: 1rem; width: 100%; outline: none; }
+    </style>
+</head>
+<body>
+    <canvas id="matrix"></canvas>
+    <div id="terminal">
+        <div class="header-tools"><div class="sys-status">BELO ELITE SYSTEM</div><div id="digital-clock">00:00:00</div></div>
+        <div class="profile-section">
+            <div class="rotating-txt">
+                <svg viewBox="0 0 200 200">
+                    <path id="txtPath" d="M 100, 100 m -75, 0 a 75,75 0 1,1 150,0 a 75,75 0 1,1 -150,0" fill="transparent"/>
+                    <text><textPath href="#txtPath">mvp.belo • cybersecurity • elite hacker • </textPath></text>
+                </svg>
+            </div>
+            <div class="profile-img"><video autoplay muted loop playsinline id="profile-video"><source src="video.mp4.mov" type="video/mp4"></video></div>
+        </div>
+        <div class="output-box" id="terminal-out"></div>
+        <div class="input-wrap"><span class="prefix">ROOT@BELO:~$</span><input type="text" id="user-input" autofocus autocomplete="off" placeholder="بنویسه help..."></div>
+    </div>
+    <script>
+        const canvas = document.getElementById('matrix'); const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const drops = Array(Math.floor(canvas.width/18)).fill(1);
+        function drawMatrix() { ctx.fillStyle = "rgba(0,0,0,0.05)"; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.fillStyle = "#ff0000"; ctx.font = "15px monospace"; drops.forEach((y,x) => { ctx.fillText(Math.floor(Math.random()*2), x*18, y*18); if(y*18 > canvas.height && Math.random() > 0.975) drops[x] = 0; drops[x]++; }); }
+        setInterval(drawMatrix, 40);
+        function updateClock() { document.getElementById('digital-clock').innerText = new Date().toLocaleTimeString('en-GB'); }
+        setInterval(updateClock, 1000); updateClock();
+        const out = document.getElementById('terminal-out'); const input = document.getElementById('user-input');
+        async function typeWrite(text, cls = '', delay = 15) { const div = document.createElement('div'); div.className = 'line ' + cls; if(/[آ-ی]/.test(text)) div.classList.add('ku-text'); div.innerHTML = text; out.appendChild(div); out.scrollTop = out.scrollHeight; }
+        async function processCmd(cmd) {
+            const command = cmd.toLowerCase().trim(); const args = command.split(' '); if(!command) return;
+            await typeWrite(`> ${cmd}`, 'cmd-color');
+            if (args[0] === 'help' || args[0] === 'هاریکاری') {
+                await typeWrite("فەرمانێن بەردەست:");
+                await typeWrite("- real-madrid: يانا وه يا مه زن", "success");
+                await typeWrite("- xezana-cataloni: خەزینا یانەیا بارسێلۆنا", "success");
+                await typeWrite("- babe-tapape: ناسناڤێن مێسی (GOAT)", "success");
+                await typeWrite("- social: تۆڕێن جڤاکی", "success");
+                await typeWrite("- clear: پاقژکرنا شاشێ", "success");
+            } else if (args[0] === 'real-madrid') {
+                await typeWrite("يانا ملكي", "highlight"); 
+                await typeWrite("warn sahkan karisa...", "highlight");
+                await new Promise(r => setTimeout(r, 800));
+                await typeWrite("⚽️ Real Madrid 0 - 4 FC Barcelona", "highlight");
+                await typeWrite("⚽️ Real Madrid 2 - 6 FC Barcelona", "highlight");
+                await typeWrite("⚽️ Real Madrid 0 - 3 FC Barcelona", "highlight");
+                await typeWrite("⚽️ FC Barcelona 5 - 0 Real Madrid", "highlight");
+                await typeWrite("⚽️ FC Barcelona 5 - 1 Real Madrid", "highlight");
+                await typeWrite("⚽️ FC Barcelona 4 - 0 Real Madrid", "highlight");
+                await typeWrite("⚽️ FC Barcelona 6 - 2 Real Madrid", "highlight");
+                const footer = document.createElement('div'); footer.style.marginTop = "15px";
+                footer.innerHTML = `<div class="ku-text" style="color: #00ff41; font-weight: bold;">هین نەفەرێت مەنا مام!</div><div style="color: #ff0000; font-family: 'Orbitron', sans-serif; font-size: 0.8rem; font-weight: 900;">HIN NAFARET MANA MAM</div>`;
+                out.appendChild(footer);
+            } else if (args[0] === 'xezana-cataloni') {
+                await typeWrite("🏆 ٥ جار Champions League", "success");
+                await typeWrite("🥇 ٢٧ جار La Liga", "success");
+                await typeWrite("🍷 ٣١ جار Copa del Rey", "success");
+                await typeWrite("🌍 ٣ جار Club World Cup", "success");
+                await typeWrite("🇪🇸 ١٤ جار Supercopa de España", "success");
+                await typeWrite("🇪🇺 ٥ جار UEFA Super Cup", "success");
+                await typeWrite("🥇 ٢ جار Copa Latina", "success");
+                await typeWrite("🥇 ٣ جار Copa Eva Duarte", "success");
+                await typeWrite("FORÇA BARÇA! 🔵🔴", "primary");
+            } else if (args[0] === 'babe-tapape') {
+                await typeWrite("🐐 LIONEL MESSI - 49+ AWARDS", "highlight");
+                await typeWrite("🏆 ٨ جار بالۆن دۆر (8x Ballon d'Or)", "success");
+                await typeWrite("🏆 ١ جار مۆندیالا جیهانێ (FIFA World Cup)", "success");
+                await typeWrite("🏆 ٢ جار Copa América", "success");
+                await typeWrite("🏆 ١ جار Finalissima", "success");
+                await typeWrite("🏆 ٤ جار Champions League", "success");
+                await typeWrite("🏆 ١٠ جار La Liga", "success");
+                await typeWrite("🏆 ٧ جار Copa del Rey", "success");
+                await typeWrite("👟 ٦ جار پێلاڤا زێڕین (6x European Golden Shoe)", "success");
+                await typeWrite("🥇 ٢ جار توپێ زێڕین یێ مۆندیالێ", "success");
+                await typeWrite("🥇 ٣ جار باشترین یاریزانێ جیهانێ (The Best FIFA)", "success");
+                await typeWrite("TOTAL CAREER TROPHIES: 44", "highlight");
+            } else if (args[0] === 'social') {
+                const links = document.createElement('div'); links.className = 'ku-text';
+                links.innerHTML = `<a href="https://www.instagram.com/i_eminki.01" target="_blank" class="btn-link">Instagram</a><a href="https://snapchat.com/t/FIuxhe8f" target="_blank" class="btn-link">Snapchat</a><a href="https://www.tiktok.com/@1st.belo" target="_blank" class="btn-link">TikTok</a>`;
+                out.appendChild(links);
+            } else if (args[0] === 'clear') { out.innerHTML = ''; }
+            else { await typeWrite("فەرمان ناهێتە ناسین.", "highlight"); }
+            out.scrollTop = out.scrollHeight;
+        }
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { processCmd(input.value); input.value = ''; } });
+        window.onload = () => { typeWrite("BELO SYSTEM ONLINE...", "highlight"); };
+    </script>
+</body>
+</html>
